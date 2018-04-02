@@ -23,4 +23,4 @@ Simple Send Message gadget created for OUTC18
 - Page URL does not update when moving about OU Campus
 - Update user selection to include the users associated for current directory only
 
-[thumb]: https://github.com/virtual/oucampus-gadget-send-message/thumbnail.png "Screenshot of message gadget"
+[thumb]: https://raw.githubusercontent.com/virtual/oucampus-gadget-send-message/master/thumbnail.png "Screenshot of message gadget"
