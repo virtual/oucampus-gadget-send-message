@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Send Message</title>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<style>body {padding: 0 15px;}  
+		</style>
+	</head>
+	<body>
+ 
+		<form>
+
+			<div class="form-group">
+				<label for="exampleFormControlSelect1">Select User</label>
+				<select id="users" class="form-control">
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="exampleFormControlTextarea1">Message</label>
+				<textarea class="form-control" id="message" rows="3"></textarea>
+			</div>
+
+			<button id="sendmsg" type="submit" class="btn btn-primary mb-2">Send</button>
+		</form>
+
+		<div style="display:none;">
+			<!-- ouc:ob --><!-- /ouc:ob -->
+</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		<script src="../lib/gadgetlib.min.js"></script>
+		<script type="text/javascript">
+			let pageUrl = '';
+			gadget.ready(function() { 
+				(gadget.oucGetCurrentLocation().done(function(data) { setUrl(data.href)}));
+				getUsers(gadget);
+			});
+			
+      // TO DO
+			// only update when a location changes to update the location
+			// bind .on oucGetCurrentLocation 
+			$(function(){
+			
+				$('#sendmsg').on('click', function(e) {
+					e.preventDefault();
+					let form = ($(this).parent('form'));
+					let username = (form.find("option:selected")[0].value); 
+					sendMessage(username, pageUrl, $('#message').val()); 
+				})
+			})
+			
+			function sendMessage(username, url, text) {
+				const apiHost = gadget.apihost;
+				
+				let msgData ={
+					subject: 'OUCampus Message Received',
+					text: text + " \
+					" + url,
+					send_email: true,
+					user: username,
+					account: 'shoreline',
+					site: 'test',
+					site: gadget.site,
+					authorization_token: gadget.token
+				} 
+
+				$.ajax({
+					method: 'POST',
+					url: apiHost + '/messages/new',
+					data: msgData
+				})
+					.done(function(data) {
+					console.log(data);
+					
+				})
+					.fail(function(err) {
+					console.log(err)
+				})
+			}
+
+			function printPages(obj) { 
+				var list =[];
+
+				// Uncomment below for testing (overrides obj users)
+				// obj = [{
+				// 	first_name: "Jeanine",
+				// 	last_name: "Schoessler",
+				// 	username: 'jsatinflame'
+				// },
+				// 	  {
+				// 	first_name: "You",
+				// 	last_name: "Developer",
+				// 	username: 'test'
+				// }];
+
+				obj.forEach(function(user) { 
+					let fullname = user.first_name + " " + user.last_name;
+					let opt = '<option class="item" value="'+user.username+'">'+fullname+'</option>';
+					list.push(opt);
+				});
+				renderList(list.join(""));
+			} 
+
+			function renderList(list) {
+				$('#users').append(list)
+			}
+
+			function setUrl(url) {
+				pageUrl = url;
+			} 
+
+			function getUsers(gadget) {
+				console.log(gadget);
+				const apiHost = gadget.apihost;
+				const callData = {
+					site: gadget.site,
+					authorization_token: gadget.token
+				}; 
+
+				$.ajax({
+					method: 'GET',
+					url: apiHost + '/files/content',
+					data: callData
+				})
+					.done(function(data) { 
+					getUrl(data); 
+				})
+					.fail(function(err) {
+					console.log(err)
+				})
+
+				$.ajax({
+					method: 'GET',
+					url: apiHost + '/users/list',
+					data: callData
+				})
+					.done(function(data) { 
+					printPages(data); 
+				})
+					.fail(function(err) {
+					console.log(err)
+				})
+			}
+
+		</script>
+	</body>
+</html>
